@@ -1,6 +1,3 @@
-# saizuroom
-Project Matakuliah Management TI
-
 # SAIZU ROOM
 
 **Sistem Peminjaman Ruangan UIN SAIZU**
