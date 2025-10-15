@@ -173,7 +173,7 @@ Jika ada yang melanggar → tolak otomatis dan tampilkan alasan.
 1. Clone repo
 
 ```bash
-git clone https://github.com/your-org/saizu-room.git
+git clone https://github.com/Anggaputra9/saizuroom.git
 cd saizu-room
 ```
 
