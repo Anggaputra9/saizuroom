@@ -183,14 +183,8 @@ cd saizu-room
 
 * Buat script migration untuk tabel
 * Tulis unit test untuk validasi booking dan API auth
-* Deploy ke server/hosting pilihan (Docker recommended)
+* Deploy ke server/hosting pilihan
 
 ---
 
-## Kontribusi
 
-Silakan buka issue atau pull request. Ikuti coding standard dan sertakan deskripsi perubahan.
-
----
-
----
