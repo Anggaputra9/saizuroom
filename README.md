@@ -39,7 +39,7 @@ Aplikasi ini mengikuti alur yang diinginkan: user melihat daftar ruangan → men
 
 ---
 
-## Alur Sistem (ringkas)
+## Alur Sistem 
 
 1. User membuka halaman utama → melihat daftar ruangan dan status.
 2. Klik `Booking` pada ruangan yang dipilih.
@@ -85,7 +85,7 @@ else:
 
 ---
 
-## Struktur Database (sederhana)
+## Struktur Database
 
 **tabel users**
 
@@ -130,7 +130,7 @@ else:
 
 ---
 
-## Validasi Otomatis (aturan contoh)
+## Validasi Otomatis 
 
 * Ruang tersedia pada rentang waktu yang diminta (no overlap)
 * Waktu booking menyesuaikan jam ruang yang kosong
@@ -143,7 +143,7 @@ Jika ada yang melanggar → tolak otomatis dan tampilkan alasan.
 
 ---
 
-## API Endpoints (contoh)
+## API Endpoints 
 
 * `POST /api/auth/login` — login
 * `POST /api/auth/register` — registrasi (opsional)
@@ -168,7 +168,7 @@ Jika ada yang melanggar → tolak otomatis dan tampilkan alasan.
 
 ---
 
-## Instalasi (contoh cepat)
+## Instalasi 
 
 1. Clone repo
 
