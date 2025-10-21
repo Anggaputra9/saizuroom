@@ -1,0 +1,5 @@
+{
+  "name": "SAIZU ROOM",
+  "description": "A campus room booking system for UIN SAIZU. This application allows students and staff to view available rooms, submit booking requests, and manage their reservations. Admins have a dedicated dashboard to oversee all bookings, manage rooms, and generate reports.",
+  "requestFramePermissions": []
+}
