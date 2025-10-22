@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import type { User, UserRole, Booking, Room } from './types';
-import { MOCK_ROOMS, MOCK_BOOKINGS } from './constants';
+import { MOCK_ROOMS, MOCK_BOOKINGS } from './constans';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
