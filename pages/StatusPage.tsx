@@ -1,21 +1,56 @@
-
 import React, { useContext, useMemo } from 'react';
-import type { BookingStatus } from '../types';
+import type { Booking, BookingStatus } from '../types';
 import { AppContext } from '../App';
 
 const StatusBadge: React.FC<{ status: BookingStatus }> = ({ status }) => {
     const statusClasses: Record<BookingStatus, string> = {
-        Pending: 'bg-yellow-100 text-yellow-800',
-        Disetujui: 'bg-green-100 text-green-800',
-        Ditolak: 'bg-red-100 text-red-800',
-        Dibatalkan: 'bg-gray-100 text-gray-800',
+        Pending: 'bg-yellow-100 text-yellow-800 ring-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-200 dark:ring-yellow-500/30',
+        Disetujui: 'bg-green-100 text-green-800 ring-green-200 dark:bg-green-500/20 dark:text-green-200 dark:ring-green-500/30',
+        Ditolak: 'bg-red-100 text-red-800 ring-red-200 dark:bg-red-500/20 dark:text-red-200 dark:ring-red-500/30',
+        Dibatalkan: 'bg-gray-200 text-gray-800 ring-gray-300 dark:bg-gray-600/50 dark:text-gray-300 dark:ring-gray-500/30',
     };
     return (
-        <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusClasses[status]}`}>
+        <span className={`px-3 py-1 text-sm font-semibold rounded-full ring-1 ${statusClasses[status]}`}>
             {status}
         </span>
     );
 };
+
+const StatusCard: React.FC<{ booking: Booking; onCancel: (id: string) => void }> = ({ booking, onCancel }) => (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-slide-in-up border border-transparent dark:border-gray-700">
+        <div className="p-5">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h3 className="text-xl font-bold text-saizu-blue dark:text-blue-300">{booking.roomName}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{booking.purpose}</p>
+                </div>
+                <StatusBadge status={booking.status} />
+            </div>
+            <div className="border-t my-4 border-gray-200 dark:border-gray-700"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <div>
+                    <p className="font-semibold text-gray-500 dark:text-gray-400">Tanggal</p>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">{new Date(booking.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                </div>
+                <div>
+                    <p className="font-semibold text-gray-500 dark:text-gray-400">Waktu</p>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">{booking.startTime} - {booking.endTime}</p>
+                </div>
+                <div className="flex items-center sm:justify-end">
+                     {(booking.status === 'Pending' || booking.status === 'Disetujui') && (
+                        <button 
+                            onClick={() => onCancel(booking.id)}
+                            className="w-full sm:w-auto text-center bg-red-500 text-white py-2 px-4 rounded-lg font-semibold text-sm hover:bg-red-600 transition-colors"
+                        >
+                            Batalkan
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 
 const StatusPage: React.FC = () => {
     const { user, bookings, updateBookingStatus } = useContext(AppContext);
@@ -36,49 +71,22 @@ const StatusPage: React.FC = () => {
     }
     
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">Status Peminjaman Anda</h1>
+        <div className="space-y-8 animate-fade-in">
+            <div className="text-center">
+                <h1 className="text-4xl font-bold text-gray-800 dark:text-white">Status Peminjaman Anda</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">Lihat riwayat dan status peminjaman ruangan Anda di sini.</p>
+            </div>
             
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keperluan</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {userBookings.length > 0 ? userBookings.map(booking => (
-                                <tr key={booking.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.roomName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(booking.date).toLocaleDateString('id-ID')}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{booking.startTime} - {booking.endTime}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{booking.purpose}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><StatusBadge status={booking.status} /></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        {(booking.status === 'Pending' || booking.status === 'Disetujui') && (
-                                            <button 
-                                                onClick={() => handleCancel(booking.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Batalkan
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">Anda belum memiliki riwayat peminjaman.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="space-y-5">
+                 {userBookings.length > 0 ? userBookings.map((booking, index) => (
+                    <div key={booking.id} style={{ animationDelay: `${index * 70}ms` }} className="opacity-0">
+                        <StatusCard booking={booking} onCancel={handleCancel} />
+                    </div>
+                )) : (
+                    <div className="text-center bg-white dark:bg-gray-800 p-12 rounded-xl shadow-md">
+                        <p className="text-gray-500 dark:text-gray-400">Anda belum memiliki riwayat peminjaman.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

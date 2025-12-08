@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useCallback, useEffect, createContext } from 'react';
 import type { User, UserRole, Booking, Room } from './types';
-import { MOCK_ROOMS, MOCK_BOOKINGS } from './constans';
+import { MOCK_ROOMS, MOCK_BOOKINGS } from './constants';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -9,8 +10,9 @@ import AdminDashboard from './pages/AdminDashboard';
 import VisiMisiPage from './pages/VisiMisiPage';
 
 export type Page = 'login' | 'home' | 'status' | 'admin' | 'visi-misi';
+export type Theme = 'light' | 'dark';
 
-export const AppContext = React.createContext<{
+export const AppContext = createContext<{
     user: User | null;
     rooms: Room[];
     bookings: Booking[];
@@ -38,11 +40,58 @@ export const AppContext = React.createContext<{
     setPage: () => {},
 });
 
+export const ThemeContext = createContext<{
+    theme: Theme;
+    toggleTheme: () => void;
+}>({
+    theme: 'light',
+    toggleTheme: () => {},
+});
+
 const App: React.FC = () => {
     const [page, setPage] = useState<Page>('home');
-    const [user, setUser] = useState<User | null>(null);
-    const [rooms, setRooms] = useState<Room[]>(MOCK_ROOMS);
-    const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+    
+    // Initialize state from localStorage if available, else use defaults
+    const [user, setUser] = useState<User | null>(() => {
+        const saved = localStorage.getItem('saizu_user');
+        return saved ? JSON.parse(saved) : null;
+    });
+
+    const [rooms, setRooms] = useState<Room[]>(() => {
+        const saved = localStorage.getItem('saizu_rooms');
+        return saved ? JSON.parse(saved) : MOCK_ROOMS;
+    });
+
+    const [bookings, setBookings] = useState<Booking[]>(() => {
+        const saved = localStorage.getItem('saizu_bookings');
+        return saved ? JSON.parse(saved) : MOCK_BOOKINGS;
+    });
+
+    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
+
+    // Persistence Effects
+    useEffect(() => {
+        localStorage.setItem('saizu_user', JSON.stringify(user));
+    }, [user]);
+
+    useEffect(() => {
+        localStorage.setItem('saizu_rooms', JSON.stringify(rooms));
+    }, [rooms]);
+
+    useEffect(() => {
+        localStorage.setItem('saizu_bookings', JSON.stringify(bookings));
+    }, [bookings]);
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove(theme === 'light' ? 'dark' : 'light');
+        root.classList.add(theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    };
 
     const login = useCallback((email: string) => {
         if (email.toLowerCase() === 'admin@uinsaizu.ac.id') {
@@ -58,23 +107,32 @@ const App: React.FC = () => {
     const logout = useCallback(() => {
         setUser(null);
         setPage('login');
+        // Clear local storage for user but keep data
+        localStorage.removeItem('saizu_user');
     }, []);
 
     const addBooking = useCallback((bookingData: Omit<Booking, 'id' | 'status'>) => {
-        const newBookingId = `book${Date.now()}`;
-        const autoStatus = Math.random() > 0.3 ? 'Disetujui' : 'Ditolak';
+        // Validation: Check for overlapping bookings
+        const hasConflict = bookings.some(b => 
+            b.roomId === bookingData.roomId && 
+            b.date === bookingData.date &&
+            (b.status === 'Disetujui' || b.status === 'Pending') &&
+            // Check if time ranges overlap: (StartA < EndB) and (EndA > StartB)
+            (bookingData.startTime < b.endTime && bookingData.endTime > b.startTime)
+        );
+
+        if (hasConflict) {
+            return { success: false, message: 'Maaf, waktu yang dipilih bertabrakan dengan peminjaman lain.' };
+        }
+
         const newBooking: Booking = {
             ...bookingData,
-            id: newBookingId,
+            id: `book${Date.now()}`,
             status: 'Pending',
         };
         setBookings(prev => [...prev, newBooking]);
-        
-        setTimeout(() => {
-            setBookings(prev => prev.map(b => b.id === newBookingId ? { ...b, status: autoStatus } : b));
-        }, 1000);
-        return { success: true, message: `Booking Anda berhasil dikirim dan akan segera diproses. Status awal: ${autoStatus}` };
-    }, []);
+        return { success: true, message: 'Peminjaman berhasil diajukan dan sedang menunggu persetujuan admin.' };
+    }, [bookings]);
 
     const updateBookingStatus = useCallback((bookingId: string, status: Booking['status']) => {
         setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
@@ -117,12 +175,14 @@ const App: React.FC = () => {
     
     return (
         <AppContext.Provider value={{ user, rooms, bookings, login, logout, addBooking, updateBookingStatus, deleteBooking, addRoom, editRoom, deleteRoom, setPage }}>
-            <div className="min-h-screen flex flex-col font-sans">
-                <Navbar />
-                <main className="flex-grow container mx-auto p-4 md:p-8">
-                    {renderPage()}
-                </main>
-            </div>
+            <ThemeContext.Provider value={{ theme, toggleTheme }}>
+                <div className="min-h-screen flex flex-col">
+                    <Navbar />
+                    <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
+                        {renderPage()}
+                    </main>
+                </div>
+            </ThemeContext.Provider>
         </AppContext.Provider>
     );
 };
