@@ -116,7 +116,7 @@ const App: React.FC = () => {
         const hasConflict = bookings.some(b => 
             b.roomId === bookingData.roomId && 
             b.date === bookingData.date &&
-            (b.status === 'Disetujui' || b.status === 'Pending') &&
+            (b.status === 'Disetujui') && // Removed 'Pending' check as generally bookings are now auto-approved
             // Check if time ranges overlap: (StartA < EndB) and (EndA > StartB)
             (bookingData.startTime < b.endTime && bookingData.endTime > b.startTime)
         );
@@ -128,10 +128,10 @@ const App: React.FC = () => {
         const newBooking: Booking = {
             ...bookingData,
             id: `book${Date.now()}`,
-            status: 'Pending',
+            status: 'Disetujui', // Changed from 'Pending' to 'Disetujui'
         };
         setBookings(prev => [...prev, newBooking]);
-        return { success: true, message: 'Peminjaman berhasil diajukan dan sedang menunggu persetujuan admin.' };
+        return { success: true, message: 'Peminjaman berhasil dilakukan. Silakan cek status peminjaman.' };
     }, [bookings]);
 
     const updateBookingStatus = useCallback((bookingId: string, status: Booking['status']) => {

@@ -44,8 +44,9 @@ const AdminDashboard: React.FC = () => {
 
     const stats = useMemo(() => ({
         totalBookings: bookings.length,
-        pendingBookings: bookings.filter(b => b.status === 'Pending').length,
+        // pendingBookings removed as logic changed to auto-approve
         approvedBookings: bookings.filter(b => b.status === 'Disetujui').length,
+        cancelledBookings: bookings.filter(b => b.status === 'Dibatalkan' || b.status === 'Ditolak').length,
         totalRooms: rooms.length
     }), [bookings, rooms]);
 
@@ -127,21 +128,15 @@ const AdminDashboard: React.FC = () => {
                 </header>
 
                 {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-in-up">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-in-up">
                         <StatCard 
                             title="Total Peminjaman" 
                             value={stats.totalBookings} 
                             colorClass="bg-blue-500"
                             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} 
                         />
-                        <StatCard 
-                            title="Menunggu" 
-                            value={stats.pendingBookings} 
-                            colorClass="bg-yellow-500"
-                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} 
-                        />
                          <StatCard 
-                            title="Disetujui" 
+                            title="Disetujui / Aktif" 
                             value={stats.approvedBookings} 
                             colorClass="bg-green-500"
                             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} 
@@ -182,18 +177,20 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={booking.status} /></td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                                {booking.status === 'Pending' && (
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => { if(window.confirm('Anda yakin ingin MENYETUJUI peminjaman ini?')) updateBookingStatus(booking.id, 'Disetujui')}} className="p-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors" title="Setujui">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                                                        </button>
-                                                        <button onClick={() => { if(window.confirm('Anda yakin ingin MENOLAK peminjaman ini?')) updateBookingStatus(booking.id, 'Ditolak')}} className="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors" title="Tolak">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                                                        </button>
-                                                    </div>
+                                                {/* Logic Baru: Admin mengontrol pembatalan */}
+                                                {(booking.status === 'Pending' || booking.status === 'Disetujui') && (
+                                                     <button 
+                                                        onClick={() => { if(window.confirm('Apakah Anda yakin ingin MEMBATALKAN peminjaman ini?')) updateBookingStatus(booking.id, 'Dibatalkan')}} 
+                                                        className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-xs font-bold flex items-center gap-1" 
+                                                        title="Batalkan Peminjaman"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                        Batalkan
+                                                    </button>
                                                 )}
-                                                {booking.status !== 'Pending' && (
-                                                     <button onClick={() => { if(window.confirm('Anda yakin ingin MENGHAPUS peminjaman ini secara permanen?')) deleteBooking(booking.id)}} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus Permanen">
+                                                
+                                                {(booking.status === 'Dibatalkan' || booking.status === 'Ditolak') && (
+                                                     <button onClick={() => { if(window.confirm('Anda yakin ingin MENGHAPUS peminjaman ini secara permanen dari database?')) deleteBooking(booking.id)}} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus Permanen">
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 000-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                                                     </button>
                                                 )}
