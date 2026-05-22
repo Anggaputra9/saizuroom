@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect, createContext } from 'react';
-import type { User, UserRole, Booking, Room } from './types';
+import type { User, Booking, Room, Building } from './types';
 import { MOCK_ROOMS, MOCK_BOOKINGS } from './constants';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';

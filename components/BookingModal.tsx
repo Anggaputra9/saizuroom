@@ -1,8 +1,8 @@
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import type { Room } from '../types';
 import { AppContext } from '../App';
-import { timeToMinutes, isValidTimeRange, isTimeInRange } from '../utils/timeUtils';
+import { isValidTimeRange, isTimeInRange } from '../utils/timeUtils';
 
 interface BookingModalProps {
     room: Room;

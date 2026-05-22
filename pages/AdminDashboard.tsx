@@ -1,6 +1,6 @@
 
 import React, { useContext, useMemo, useState } from 'react';
-import type { Booking, BookingStatus, Room } from '../types';
+import type { BookingStatus, Room } from '../types';
 import { AppContext } from '../App';
 import RoomModal from '../components/RoomModal';
 
