@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import StatusPage from './pages/StatusPage';
 import AdminDashboard from './pages/AdminDashboard';
 import VisiMisiPage from './pages/VisiMisiPage';
+import { doTimeRangesOverlap } from './utils/timeUtils';
 
 export type Page = 'login' | 'home' | 'status' | 'admin' | 'visi-misi';
 export type Theme = 'light' | 'dark';
@@ -112,13 +113,19 @@ const App: React.FC = () => {
     }, []);
 
     const addBooking = useCallback((bookingData: Omit<Booking, 'id' | 'status'>) => {
-        // Validation: Check for overlapping bookings
+        // Validation: Check for overlapping bookings with active statuses
         const hasConflict = bookings.some(b => 
             b.roomId === bookingData.roomId && 
             b.date === bookingData.date &&
-            (b.status === 'Disetujui') && // Removed 'Pending' check as generally bookings are now auto-approved
-            // Check if time ranges overlap: (StartA < EndB) and (EndA > StartB)
-            (bookingData.startTime < b.endTime && bookingData.endTime > b.startTime)
+            // Check only active bookings (Disetujui or Pending if exists)
+            (b.status === 'Disetujui' || b.status === 'Pending') &&
+            // Use proper time comparison utility
+            doTimeRangesOverlap(
+                bookingData.startTime,
+                bookingData.endTime,
+                b.startTime,
+                b.endTime
+            )
         );
 
         if (hasConflict) {
@@ -128,7 +135,7 @@ const App: React.FC = () => {
         const newBooking: Booking = {
             ...bookingData,
             id: `book${Date.now()}`,
-            status: 'Disetujui', // Changed from 'Pending' to 'Disetujui'
+            status: 'Disetujui', // Auto-approve system
         };
         setBookings(prev => [...prev, newBooking]);
         return { success: true, message: 'Peminjaman berhasil dilakukan. Silakan cek status peminjaman.' };
@@ -143,12 +150,43 @@ const App: React.FC = () => {
     }, []);
 
     const addRoom = useCallback((roomData: Omit<Room, 'id'>) => {
+        // Helper function to generate unique room ID
+        const generateRoomId = (building: Building, existingRooms: Room[]): string => {
+            // Try to extract room number from name (e.g., "Ruang D.101" -> "101")
+            const numberMatch = roomData.name.match(/\d+/);
+            if (numberMatch) {
+                const roomNumber = numberMatch[0];
+                const proposedId = `${building}${roomNumber}`;
+                
+                // Check if ID already exists
+                if (!existingRooms.some(room => room.id === proposedId)) {
+                    return proposedId;
+                }
+            }
+            
+            // If extraction fails or ID exists, find next available number
+            const roomsInBuilding = existingRooms.filter(room => room.building === building);
+            let roomNumber = 101; // Start from 101
+            
+            // Find next available room number in format {building}{3-digit number}
+            while (roomsInBuilding.some(room => room.id === `${building}${roomNumber}`)) {
+                roomNumber++;
+                // Safety check to prevent infinite loop
+                if (roomNumber > 999) {
+                    roomNumber = 101;
+                    break;
+                }
+            }
+            
+            return `${building}${roomNumber}`;
+        };
+        
         const newRoom: Room = {
             ...roomData,
-            id: `${roomData.building}${Math.floor(Math.random() * 900) + 100}`
+            id: generateRoomId(roomData.building, rooms)
         };
         setRooms(prev => [...prev, newRoom]);
-    }, []);
+    }, [rooms]);
 
     const editRoom = useCallback((updatedRoom: Room) => {
         setRooms(prev => prev.map(r => r.id === updatedRoom.id ? updatedRoom : r));

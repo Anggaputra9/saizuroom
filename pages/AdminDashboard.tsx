@@ -177,8 +177,8 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={booking.status} /></td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                                {/* Logic Baru: Admin mengontrol pembatalan */}
-                                                {(booking.status === 'Pending' || booking.status === 'Disetujui') && (
+                                                {/* Admin can cancel active bookings (Disetujui or Pending if exists) */}
+                                                {(booking.status === 'Disetujui' || booking.status === 'Pending') && (
                                                      <button 
                                                         onClick={() => { if(window.confirm('Apakah Anda yakin ingin MEMBATALKAN peminjaman ini?')) updateBookingStatus(booking.id, 'Dibatalkan')}} 
                                                         className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-xs font-bold flex items-center gap-1" 

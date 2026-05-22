@@ -1,9 +1,10 @@
 
 import React, { useState, useContext, useMemo } from 'react';
-import type { Building, Room } from '../types';
+import type { Building, Room, Booking } from '../types';
 import { AppContext } from '../App';
 import RoomCard from '../components/RoomCard';
 import BookingModal from '../components/BookingModal';
+import { timeToMinutes, minutesToTime } from '../utils/timeUtils';
 
 // Helper to get local date string YYYY-MM-DD
 const getTodayDate = () => {
@@ -14,20 +15,7 @@ const getTodayDate = () => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper to convert HH:mm to minutes from midnight
-const timeToMinutes = (time: string): number => {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-};
-
-// Helper to convert minutes from midnight to HH:mm
-const minutesToTime = (minutes: number): string => {
-  const h = Math.floor(minutes / 60).toString().padStart(2, '0');
-  const m = (minutes % 60).toString().padStart(2, '0');
-  return `${h}:${m}`;
-};
-
-const getAvailableSlots = (room: Room, bookingsForRoom: any[]) => {
+const getAvailableSlots = (room: Room, bookingsForRoom: Booking[]) => {
   const roomStart = timeToMinutes(room.availableStartTime);
   const roomEnd = timeToMinutes(room.availableEndTime);
   

@@ -54,6 +54,6 @@ export const MOCK_BOOKINGS: Booking[] = [
         startTime: '16:00', 
         endTime: '17:00', 
         purpose: 'Rapat BEM', 
-        status: 'Pending' 
+        status: 'Disetujui' 
     }
 ];

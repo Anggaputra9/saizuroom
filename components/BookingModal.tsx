@@ -2,6 +2,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import type { Room } from '../types';
 import { AppContext } from '../App';
+import { timeToMinutes, isValidTimeRange, isTimeInRange } from '../utils/timeUtils';
 
 interface BookingModalProps {
     room: Room;
@@ -39,13 +40,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, selectedSlot, date, o
             return;
         }
 
-        // Validate Time
-        if (selectedTime.startTime < selectedSlot.startTime || selectedTime.endTime > selectedSlot.endTime) {
+        // Validate Time using proper time comparison
+        if (!isTimeInRange(selectedTime.startTime, selectedSlot.startTime, selectedSlot.endTime) || 
+            !isTimeInRange(selectedTime.endTime, selectedSlot.startTime, selectedSlot.endTime)) {
             setNotification({ type: 'error', message: `Waktu harus berada dalam rentang ${selectedSlot.startTime} - ${selectedSlot.endTime}` });
             return;
         }
 
-        if (selectedTime.startTime >= selectedTime.endTime) {
+        if (!isValidTimeRange(selectedTime.startTime, selectedTime.endTime)) {
             setNotification({ type: 'error', message: 'Jam selesai harus lebih akhir dari jam mulai.' });
             return;
         }

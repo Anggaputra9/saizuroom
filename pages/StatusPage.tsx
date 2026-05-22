@@ -70,7 +70,7 @@ const StatusCard: React.FC<{ booking: Booking; onCancel: (id: string) => void }>
 
             {/* Action Buttons */}
             <div className="flex justify-end mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
-                 {(booking.status === 'Pending' || booking.status === 'Disetujui') && (
+                 {(booking.status === 'Disetujui' || booking.status === 'Pending') && (
                     <button 
                         onClick={() => onCancel(booking.id)}
                         className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 font-semibold text-sm flex items-center gap-2 transition-colors"
